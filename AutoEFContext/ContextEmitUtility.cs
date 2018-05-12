@@ -105,10 +105,12 @@ namespace AutoEFContext
         /// <param name="inputTypeBuilder"></param>
         private void PrepareConstr(TypeBuilder inputTypeBuilder)
         {
+            //循环基类的构造方法
             foreach (var onCons in m_useBaseType.GetConstructors())
             {
                 var tempArgParam = onCons.GetParameters();
                 var tempArgTypes = (from n in tempArgParam select n.ParameterType).ToArray();
+                //设置构造方法
                 var tempCon = inputTypeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, tempArgTypes);
 
                 var tempIl = tempCon.GetILGenerator();
@@ -121,6 +123,7 @@ namespace AutoEFContext
                     tempIl.Emit(OpCodes.Ldarg,i+1);
                 }
 
+                //发起基类构造方法
                 tempIl.Emit(OpCodes.Call, onCons);
                 tempIl.Emit(OpCodes.Ret);
             }
@@ -143,16 +146,21 @@ namespace AutoEFContext
             var methodSet = inputTypeBuilder.DefineMethod(m_SetStr + inputType.Name + m_DBStr, MethodAttributes.Public, null, new Type[] { tempType } );
 
             var getMethodIl = methodGet.GetILGenerator();
-
+            //加载参数0;此实例
             getMethodIl.Emit(OpCodes.Ldarg_0);
+            //加载读取字段行为
             getMethodIl.Emit(OpCodes.Ldfld, tempFiled);
+            //返回
             getMethodIl.Emit(OpCodes.Ret);
 
             var setMethodIl = methodSet.GetILGenerator();
-
+            //加载参数0：此实例
             setMethodIl.Emit(OpCodes.Ldarg_0);
+            //加载参数1：输入对象
             setMethodIl.Emit(OpCodes.Ldarg_1);
+            //加载设置字段行为
             setMethodIl.Emit(OpCodes.Stfld, tempFiled);
+            //返回
             setMethodIl.Emit(OpCodes.Ret);
 
             //声明属性

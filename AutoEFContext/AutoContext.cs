@@ -55,12 +55,29 @@ namespace AutoEFContext
             Init();
         }
 
+        /// <summary>
+        /// 获取DbSet
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public IDbSet<T> GetDb<T>()
             where T:class
         {
 
             Type useType = typeof(T);
             return m_useDicPropertyInfo[useType].GetValue(this) as IDbSet<T>;
+        }
+
+        /// <summary>
+        /// 设置DbSet
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="inputValue"></param>
+        public void SetDb<T>(IDbSet<T> inputValue)
+            where T : class
+        {
+            Type useType = typeof(T);
+            m_useDicPropertyInfo[useType].SetValue(this, inputValue);
         }
 
         /// <summary>
