@@ -106,6 +106,7 @@ namespace AutoEFContext
             using (var useContext = GetContext(connectionStr))
             {
                 useContext.Init();
+                useContext.Database.Initialize(true);
             }
         }
 
