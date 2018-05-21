@@ -12,7 +12,7 @@ namespace AutoEFContext
     /// <summary>
     /// 自动上下文基类
     /// </summary>
-    public abstract class AutoContext:DbContext
+    public abstract class AutoContext:DbContext, IDbContext
     {
         /// <summary>
         /// 使用的实际类型

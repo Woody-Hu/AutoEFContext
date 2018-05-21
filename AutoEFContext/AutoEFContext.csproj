@@ -53,6 +53,7 @@
     <Compile Include="AutoEntityAttribute.cs" />
     <Compile Include="ContextEmitUtility.cs" />
     <Compile Include="ContextTypeFactory.cs" />
+    <Compile Include="IDbContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
