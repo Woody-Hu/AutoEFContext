@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2018
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoEFContext", "AutoEFContext\AutoEFContext.csproj", "{4BE877D3-7850-453D-9BEC-A112A0CFD20A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsole", "TestConsole\TestConsole.csproj", "{C917E464-2F06-44B4-9AB2-60FAD7DFECDD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4BE877D3-7850-453D-9BEC-A112A0CFD20A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BE877D3-7850-453D-9BEC-A112A0CFD20A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BE877D3-7850-453D-9BEC-A112A0CFD20A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BE877D3-7850-453D-9BEC-A112A0CFD20A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C917E464-2F06-44B4-9AB2-60FAD7DFECDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C917E464-2F06-44B4-9AB2-60FAD7DFECDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C917E464-2F06-44B4-9AB2-60FAD7DFECDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C917E464-2F06-44B4-9AB2-60FAD7DFECDD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8E66F206-877A-45FB-A796-85182DB3DE3C}
+	EndGlobalSection
+EndGlobal
