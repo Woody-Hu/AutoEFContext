@@ -1,0 +1,12 @@
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\bin\Debug\TestConsole.exe.config
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\bin\Debug\TestConsole.exe
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\bin\Debug\TestConsole.pdb
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\bin\Debug\AutoEFContext.dll
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\bin\Debug\EntityFramework.dll
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\bin\Debug\EntityFramework.SqlServer.dll
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\bin\Debug\AutoEFContext.pdb
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\bin\Debug\EntityFramework.xml
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\bin\Debug\EntityFramework.SqlServer.xml
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\obj\Debug\TestConsole.csprojResolveAssemblyReference.cache
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\obj\Debug\TestConsole.exe
+D:\GitHub\AutoEFContext\NetFrameWork\TestConsole\obj\Debug\TestConsole.pdb

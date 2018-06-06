@@ -1,0 +1,10 @@
+D:\GitHub\AutoEFContext\NetFrameWork\AutoEFContext\bin\Debug\AutoEFContext.dll.config
+D:\GitHub\AutoEFContext\NetFrameWork\AutoEFContext\bin\Debug\AutoEFContext.dll
+D:\GitHub\AutoEFContext\NetFrameWork\AutoEFContext\bin\Debug\AutoEFContext.pdb
+D:\GitHub\AutoEFContext\NetFrameWork\AutoEFContext\bin\Debug\EntityFramework.dll
+D:\GitHub\AutoEFContext\NetFrameWork\AutoEFContext\bin\Debug\EntityFramework.SqlServer.dll
+D:\GitHub\AutoEFContext\NetFrameWork\AutoEFContext\bin\Debug\EntityFramework.xml
+D:\GitHub\AutoEFContext\NetFrameWork\AutoEFContext\bin\Debug\EntityFramework.SqlServer.xml
+D:\GitHub\AutoEFContext\NetFrameWork\AutoEFContext\obj\Debug\AutoEFContext.csprojResolveAssemblyReference.cache
+D:\GitHub\AutoEFContext\NetFrameWork\AutoEFContext\obj\Debug\AutoEFContext.dll
+D:\GitHub\AutoEFContext\NetFrameWork\AutoEFContext\obj\Debug\AutoEFContext.pdb
