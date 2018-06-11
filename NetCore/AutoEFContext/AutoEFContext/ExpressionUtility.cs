@@ -18,6 +18,26 @@ namespace AutoEFContext
         private static Type m_useContextType = typeof(AutoContext);
 
         /// <summary>
+        /// 获得一个类型的DbsetGet委托字典
+        /// </summary>
+        /// <param name="inputType"></param>
+        /// <returns></returns>
+        public static Dictionary<Type,object> GetGetFuncDic(Type inputType)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// 获得一个类型的DbsetSet委托字典
+        /// </summary>
+        /// <param name="inputType"></param>
+        /// <returns></returns>
+        public static Dictionary<Type,object> GetSetActionDic(Type inputType)
+        {
+            return null;
+        }
+
+        /// <summary>
         /// 获得所有的Get委托
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -51,10 +71,7 @@ namespace AutoEFContext
             //获得使用的属性
             var tempProperty = Expression.Property(realUseContextParameter, useProperty);
 
-            //类型转换
-            var realUseTempProperty = Expression.TypeAs(tempProperty, useType);
-
-            var useGetExpression = Expression.Call(realUseTempProperty, useProperty.GetMethod);
+            var useGetExpression = Expression.Call(realUseContextParameter, useProperty.GetMethod);
 
             return Expression.Lambda<Func<AutoContext, DbSet<T>>>(useGetExpression, inputContextParameter).Compile();
 
@@ -97,11 +114,8 @@ namespace AutoEFContext
             //获得使用的属性
             var tempProperty = Expression.Property(realUseContextParameter, useProperty);
 
-            //类型转换
-            var realUseTempProperty = Expression.TypeAs(tempProperty, useType);
-
             //制作set表达式
-            var useSetExpression = Expression.Call(realUseTempProperty, useProperty.SetMethod, inputValueParameter);
+            var useSetExpression = Expression.Call(realUseContextParameter, useProperty.SetMethod, inputValueParameter);
 
             //编译表达式
             return Expression.Lambda<Action<AutoContext, DbSet<T>>>(useSetExpression, inputContextParameter, inputValueParameter).Compile();
