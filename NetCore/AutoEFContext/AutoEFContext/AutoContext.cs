@@ -21,11 +21,6 @@ namespace AutoEFContext
         private static Type m_realUseContextType;
 
         /// <summary>
-        /// 使用的属性字典
-        /// </summary>
-        private Dictionary<Type, PropertyInfo> m_useDicPropertyInfo = null;
-
-        /// <summary>
         /// 使用的Set表达式字典
         /// </summary>
         private Dictionary<Type, object> m_useSetExpression = null;
@@ -66,7 +61,23 @@ namespace AutoEFContext
             where T : class
         {
             Type useType = typeof(T);
-            return m_useDicPropertyInfo[useType].GetValue(this) as DbSet<T>;
+
+            if (!m_useGetExpression.ContainsKey(useType))
+            {
+                return null;
+            }
+
+
+            if (m_useGetExpression[useType] is Func<AutoContext, DbSet<T>> useExpression)
+            {
+                //执行表达式树
+                return useExpression(this);
+            }
+            else
+            {
+                return null;
+            }
+
         }
 
         /// <summary>
@@ -78,7 +89,17 @@ namespace AutoEFContext
             where T : class
         {
             Type useType = typeof(T);
-            m_useDicPropertyInfo[useType].SetValue(this, inputValue);
+
+            if (!m_useGetExpression.ContainsKey(useType))
+            {
+                return;
+            }
+
+            //获取表达式树
+            if (m_useSetExpression[useType] is Action<AutoContext, DbSet<T>> useExpression)
+            {
+                useExpression(this, inputValue);
+            }
         }
 
         /// <summary>
@@ -109,17 +130,11 @@ namespace AutoEFContext
         /// </summary>
         private void Init()
         {
-            m_useDicPropertyInfo = new Dictionary<Type, PropertyInfo>();
-
             Type useType = this.GetType();
 
-            foreach (var oneProperty in useType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-            {
-                if (oneProperty.PropertyType.IsGenericType && oneProperty.PropertyType.GetGenericTypeDefinition() == m_useBaseReturnType)
-                {
-                    m_useDicPropertyInfo.Add(oneProperty.PropertyType.GetGenericArguments()[0], oneProperty);
-                }
-            }
+            m_useSetExpression = ExpressionUtility.GetSetActionDic(useType);
+
+            m_useGetExpression = ExpressionUtility.GetGetFuncDic(useType);
         }
     }
 }
