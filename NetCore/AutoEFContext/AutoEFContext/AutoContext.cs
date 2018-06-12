@@ -13,13 +13,37 @@ namespace AutoEFContext
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
+
+            var useDic = ConcurrentTypeDelDic.GetDic();
+            var thisType = this.GetType();
+
+            //使用委托
+            if (useDic.Contains(thisType))
+            {
+                var tempPacker = useDic.Get(thisType);
+                tempPacker.UseOnConfig?.Invoke(optionsBuilder);
+            }
         }
 
-        /// <summary>
-        /// 使用的实际类型
-        /// </summary>
-        private static Type m_realUseContextType;
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
+            var useDic = ConcurrentTypeDelDic.GetDic();
+            var thisType = this.GetType();
+
+            //使用委托
+            if (useDic.Contains(thisType))
+            {
+                var tempPacker = useDic.Get(thisType);
+
+                tempPacker.UseOnModelCreating?.Invoke(modelBuilder);
+            }
+
+
+        }
+
+        #region 私有字段
         /// <summary>
         /// 使用的Set表达式字典
         /// </summary>
@@ -33,16 +57,8 @@ namespace AutoEFContext
         /// <summary>
         /// 使用的返回值类型泛型基础类
         /// </summary>
-        private static Type m_useBaseReturnType = typeof(DbSet<>);
-
-        /// <summary>
-        /// 静态初始化
-        /// </summary>
-        static AutoContext()
-        {
-            //制作代理类
-            m_realUseContextType = ContextTypeFactory.GetProxyType();
-        }
+        private static Type m_useBaseReturnType = typeof(DbSet<>); 
+        #endregion
 
         /// <summary>
         /// 构造方法
@@ -103,27 +119,16 @@ namespace AutoEFContext
         }
 
         /// <summary>
-        /// 获得数据库连接对象
-        /// </summary>
-        /// <param name="connectionStr"></param>
-        /// <returns></returns>
-        public static AutoContext GetContext()
-        {
-            return Activator.CreateInstance(m_realUseContextType) as AutoContext;
-        }
-
-        /// <summary>
         /// 初始化数据库结构
         /// </summary>
         /// <param name="connectionStr"></param>
-        public static void InitDB()
+        public void InitDB()
         {
-            using (var useContext = GetContext())
-            {
-                useContext.Init();
-                useContext.Database.EnsureCreated();
-            }
+            this.Database.EnsureCreated();
         }
+
+
+        #region 私有方法
 
         /// <summary>
         /// 初始化字段
@@ -135,6 +140,7 @@ namespace AutoEFContext
             m_useSetExpression = ExpressionUtility.GetSetActionDic(useType);
 
             m_useGetExpression = ExpressionUtility.GetGetFuncDic(useType);
-        }
+        } 
+        #endregion
     }
 }

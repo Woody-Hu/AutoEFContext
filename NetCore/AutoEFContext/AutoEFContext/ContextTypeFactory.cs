@@ -9,7 +9,7 @@ namespace AutoEFContext
     /// <summary>
     /// 代理上下文制造工厂
     /// </summary>
-    internal class ContextTypeFactory
+    public class ContextTypeFactory
     {
         /// <summary>
         /// 默认的assembly名称
@@ -25,7 +25,7 @@ namespace AutoEFContext
         /// 制造代理上下文类型
         /// </summary>
         /// <returns></returns>
-        internal static Type GetProxyType()
+        public static Type GetProxyType()
         {
             List<Type> lstEntityTypes = new List<Type>();
 
