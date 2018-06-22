@@ -10,6 +10,11 @@ namespace AutoEFContext
     /// </summary>
     public abstract class AutoContext:DbContext
     {
+        #region 重写方法组
+        /// <summary>
+        /// 重写的方法
+        /// </summary>
+        /// <param name="optionsBuilder"></param>
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
@@ -25,6 +30,10 @@ namespace AutoEFContext
             }
         }
 
+        /// <summary>
+        /// 重写的方法
+        /// </summary>
+        /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -41,7 +50,8 @@ namespace AutoEFContext
             }
 
 
-        }
+        } 
+        #endregion
 
         #region 私有字段
         /// <summary>

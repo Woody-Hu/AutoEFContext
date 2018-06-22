@@ -25,7 +25,7 @@ namespace AutoEFContext
         /// 制造代理上下文类型
         /// </summary>
         /// <returns></returns>
-        public static Type GetProxyType()
+        public static Type GetProxyType(OnConfiguringDel useOneConfiguringDle = null, OnModelCreatingDel useOneMdoleCreatingDel = null)
         {
             List<Type> lstEntityTypes = new List<Type>();
 
@@ -62,6 +62,19 @@ namespace AutoEFContext
             ContextEmitUtility tempUseEmitUtility = new ContextEmitUtility(m_strUseContextAssembly, m_strUseContext, lstEntityTypes);
 
             var returnValue = tempUseEmitUtility.EmiteContextType();
+
+            if (null != returnValue)
+            {
+                //获取全局字典
+                ConcurrentTypeDelDic useDic = ConcurrentTypeDelDic.GetDic();
+
+                //制作临时封装
+                EFDelPacker tempPacker = new EFDelPacker() { UseOnConfig = useOneConfiguringDle, UseOnModelCreating = useOneMdoleCreatingDel };
+
+                //添加到字典
+                useDic.Add(returnValue, tempPacker);
+
+            }
 
             return returnValue;
         }
