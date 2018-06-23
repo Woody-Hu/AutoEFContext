@@ -32,7 +32,7 @@ namespace AutofacImp
             }
 
             //注册为请求实例
-            builder.RegisterType(tempType).As(typeof(AutoContext)).InstancePerRequest();
+            builder.RegisterType(tempType).As(typeof(AutoContext)).InstancePerLifetimeScope();
         }
     }
 }
