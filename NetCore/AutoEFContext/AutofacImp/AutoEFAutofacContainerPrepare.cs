@@ -24,6 +24,13 @@ namespace AutofacImp
         {
             //制作临时上下文对象
             var tempType = ContextTypeFactory.GetProxyType(m_useOnConfiguring, m_useOneModelCreatingDel);
+
+            //初始化数据库结构
+            using (var tempContext = Activator.CreateInstance(tempType) as AutoContext)
+            {
+                tempContext.InitDB();
+            }
+
             //注册为请求实例
             builder.RegisterType(tempType).As(typeof(AutoContext)).InstancePerRequest();
         }
