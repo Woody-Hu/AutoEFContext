@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoEFContext", "AutoEFCont
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestConsole", "TestConsole\TestConsole.csproj", "{C917E464-2F06-44B4-9AB2-60FAD7DFECDD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutofacEFImp", "AutofacImp\AutofacEFImp.csproj", "{5E36F85F-43CF-49AC-AF0E-E225EF5D3B0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutofacEFImp", "AutofacImp\AutofacEFImp.csproj", "{5E36F85F-43CF-49AC-AF0E-E225EF5D3B0B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutofacMiddleware", "AutofacMiddleware\AutofacMiddleware.csproj", "{2C455905-C22B-4D57-94DA-A1FDA0C1398C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoEFContextRepository", "AutoEFContextRepository\AutoEFContextRepository.csproj", "{E4BD3317-224C-4B56-BA41-D2A38F37845D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{2C455905-C22B-4D57-94DA-A1FDA0C1398C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C455905-C22B-4D57-94DA-A1FDA0C1398C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C455905-C22B-4D57-94DA-A1FDA0C1398C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4BD3317-224C-4B56-BA41-D2A38F37845D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4BD3317-224C-4B56-BA41-D2A38F37845D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4BD3317-224C-4B56-BA41-D2A38F37845D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4BD3317-224C-4B56-BA41-D2A38F37845D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
