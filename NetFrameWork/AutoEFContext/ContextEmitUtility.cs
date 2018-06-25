@@ -58,10 +58,10 @@ namespace AutoEFContext
         /// <summary>
         /// 泛型Db容器类型
         /// </summary>
-        private static Type m_baseDBSetType = typeof(IDbSet<>); 
+        private static Type m_baseDBSetType = typeof(DbSet<>);
         #endregion
 
-        internal ContextEmitUtility(string inputAssemblyName, string inputContexName,List<Type> inputLstEntities)
+        internal ContextEmitUtility(string inputAssemblyName, string inputContexName, List<Type> inputLstEntities)
         {
             m_useAssemblyName = inputAssemblyName;
             m_useContextName = inputContexName;
@@ -72,30 +72,38 @@ namespace AutoEFContext
         /// 生成射出类型
         /// </summary>
         /// <returns></returns>
-        internal Type EmiteContextType()
+        internal Type EmiteContextType(Type inputBaseType = null)
         {
             Type returnValue = null;
 
             AppDomain useAppDomain = AppDomain.CurrentDomain;
 
-            AssemblyBuilder useAssemblyBuilder = useAppDomain.DefineDynamicAssembly(new AssemblyName(m_useAssemblyName), AssemblyBuilderAccess.Run);
+            Type useBaseType = null;
+
+            //若没输入基类则使用默认类
+            if (null == inputBaseType)
+            {
+                useBaseType = m_useBaseType;
+            }
+
+            AssemblyBuilder useAssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(m_useAssemblyName), AssemblyBuilderAccess.Run);
 
             ModuleBuilder useModuleBuilder = useAssemblyBuilder.DefineDynamicModule(m_useAssemblyName);
 
-            TypeBuilder useTypeBuilder = useModuleBuilder.DefineType(m_useContextName, TypeAttributes.Public, m_useBaseType);
+            TypeBuilder useTypeBuilder = useModuleBuilder.DefineType(m_useContextName, TypeAttributes.Public, useBaseType);
 
-            PrepareConstr(useTypeBuilder);
+            PrepareConstr(useTypeBuilder, useBaseType);
 
             foreach (var oneType in m_useEntityTypies)
             {
                 PrepareProperty(useTypeBuilder, oneType);
             }
 
-         
+
             //创建类型
             returnValue = useTypeBuilder.CreateType();
-        
- 
+
+
             return returnValue;
         }
 
@@ -103,10 +111,10 @@ namespace AutoEFContext
         /// 准备构造方法
         /// </summary>
         /// <param name="inputTypeBuilder"></param>
-        private void PrepareConstr(TypeBuilder inputTypeBuilder)
+        private void PrepareConstr(TypeBuilder inputTypeBuilder, Type inputBaseType)
         {
             //循环基类的构造方法
-            foreach (var onCons in m_useBaseType.GetConstructors())
+            foreach (var onCons in inputBaseType.GetConstructors())
             {
                 var tempArgParam = onCons.GetParameters();
                 var tempArgTypes = (from n in tempArgParam select n.ParameterType).ToArray();
@@ -120,7 +128,7 @@ namespace AutoEFContext
 
                 for (int i = 0; i < tempArgTypes.Length; i++)
                 {
-                    tempIl.Emit(OpCodes.Ldarg,i+1);
+                    tempIl.Emit(OpCodes.Ldarg, i + 1);
                 }
 
                 //发起基类构造方法
@@ -134,7 +142,7 @@ namespace AutoEFContext
         /// </summary>
         /// <param name="inputTypeBuilder"></param>
         /// <param name="inputType"></param>
-        private void PrepareProperty(TypeBuilder inputTypeBuilder,Type inputType)
+        private void PrepareProperty(TypeBuilder inputTypeBuilder, Type inputType)
         {
             //制作泛型参数
             Type tempType = m_baseDBSetType.MakeGenericType(inputType);
@@ -143,7 +151,7 @@ namespace AutoEFContext
 
             //制作get/set方法
             var methodGet = inputTypeBuilder.DefineMethod(m_GetStr + inputType.Name + m_DBStr, MethodAttributes.Public, tempType, null);
-            var methodSet = inputTypeBuilder.DefineMethod(m_SetStr + inputType.Name + m_DBStr, MethodAttributes.Public, null, new Type[] { tempType } );
+            var methodSet = inputTypeBuilder.DefineMethod(m_SetStr + inputType.Name + m_DBStr, MethodAttributes.Public, null, new Type[] { tempType });
 
             var getMethodIl = methodGet.GetILGenerator();
             //加载参数0;此实例

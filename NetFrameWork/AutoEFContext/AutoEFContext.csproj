@@ -51,9 +51,14 @@
   <ItemGroup>
     <Compile Include="AutoContext.cs" />
     <Compile Include="AutoEntityAttribute.cs" />
+    <Compile Include="ConcurrentTypeDelDic.cs" />
     <Compile Include="ContextEmitUtility.cs" />
     <Compile Include="ContextTypeFactory.cs" />
+    <Compile Include="EFDelPacker.cs" />
+    <Compile Include="ExpressionUtility.cs" />
     <Compile Include="IDbContext.cs" />
+    <Compile Include="IKEYFilter.cs" />
+    <Compile Include="OnMdelCreatingDel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

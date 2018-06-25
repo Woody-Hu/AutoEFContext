@@ -7,14 +7,15 @@ using System.Threading.Tasks;
 namespace AutoEFContext
 {
     /// <summary>
-    /// 自动Entity特性
+    /// 使用的Key过滤器
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public class AutoEntityAttribute : Attribute
+    public interface IKEYFilter
     {
         /// <summary>
-        /// 使用的过滤Key
+        /// 是否使用相应的Key
         /// </summary>
-        public string Key { set; get; }
+        /// <param name="inputKey">输入的Key</param>
+        /// <returns>是/否</returns>
+        bool IfUse(string inputKey);
     }
 }
