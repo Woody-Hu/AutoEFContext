@@ -72,19 +72,27 @@ namespace AutoEFContext
         /// 生成射出类型
         /// </summary>
         /// <returns></returns>
-        internal Type EmiteContextType()
+        internal Type EmiteContextType(Type inputBaseType = null)
         {
             Type returnValue = null;
 
             AppDomain useAppDomain = AppDomain.CurrentDomain;
 
+            Type useBaseType = null;
+
+            //若没输入基类则使用默认类
+            if (null == inputBaseType)
+            {
+                useBaseType = m_useBaseType;
+            }
+
             AssemblyBuilder useAssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(m_useAssemblyName), AssemblyBuilderAccess.Run);
 
             ModuleBuilder useModuleBuilder = useAssemblyBuilder.DefineDynamicModule(m_useAssemblyName);
 
-            TypeBuilder useTypeBuilder = useModuleBuilder.DefineType(m_useContextName, TypeAttributes.Public, m_useBaseType);
+            TypeBuilder useTypeBuilder = useModuleBuilder.DefineType(m_useContextName, TypeAttributes.Public, useBaseType);
 
-            PrepareConstr(useTypeBuilder);
+            PrepareConstr(useTypeBuilder, useBaseType);
 
             foreach (var oneType in m_useEntityTypies)
             {
@@ -103,10 +111,10 @@ namespace AutoEFContext
         /// 准备构造方法
         /// </summary>
         /// <param name="inputTypeBuilder"></param>
-        private void PrepareConstr(TypeBuilder inputTypeBuilder)
+        private void PrepareConstr(TypeBuilder inputTypeBuilder,Type inputBaseType)
         {
             //循环基类的构造方法
-            foreach (var onCons in m_useBaseType.GetConstructors())
+            foreach (var onCons in inputBaseType.GetConstructors())
             {
                 var tempArgParam = onCons.GetParameters();
                 var tempArgTypes = (from n in tempArgParam select n.ParameterType).ToArray();

@@ -12,5 +12,9 @@ namespace AutoEFContext
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class AutoEntityAttribute : Attribute
     {
+        /// <summary>
+        /// 使用的过滤Key
+        /// </summary>
+        public string Key { set; get; }
     }
 }
