@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutoEFContext\AutoEFContext.csproj" />
+    <ProjectReference Include="..\AutofacMiddleware\AutofacMiddleware.csproj" />
   </ItemGroup>
 
 </Project>

@@ -85,6 +85,10 @@ namespace AutoEFContext
             {
                 useBaseType = m_useBaseType;
             }
+            else
+            {
+                useBaseType = inputBaseType;
+            }
 
             AssemblyBuilder useAssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(m_useAssemblyName), AssemblyBuilderAccess.Run);
 

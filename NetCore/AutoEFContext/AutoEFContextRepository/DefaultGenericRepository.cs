@@ -1,4 +1,5 @@
 ﻿using AutoEFContext;
+using AutofacMiddleware;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,12 +10,13 @@ using System.Threading.Tasks;
 
 namespace AutoEFContextRepository
 {
+    [Component(IfByClass = false,LifeScope = LifeScopeKind.Transient)]
     /// <summary>
     /// 默认的泛型操作机制类
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="X"></typeparam>
-    public class DefaultGenericRepository<T, X> : IRepository<X>
+    public class DefaultGenericRepository<T, X> : IRepository<T,X>
         where T:AutoContext
         where X:class
     {
@@ -27,8 +29,18 @@ namespace AutoEFContextRepository
         /// <summary>
         /// 使用的对应DbSet对象
         /// </summary>
-        private DbSet<X> m_useDB; 
+        private DbSet<X> m_useDB;
         #endregion
+
+        /// <summary>
+        /// 使用的DbSet对象
+        /// </summary>
+        public DbSet<X> UseDB => m_useDB;
+
+        /// <summary>
+        /// 使用的DbContext
+        /// </summary>
+        public T UseContext => m_useContext;
 
         /// <summary>
         /// 构造方法
@@ -72,9 +84,9 @@ namespace AutoEFContextRepository
         /// </summary>
         /// <param name="useWhere">使用的过滤条件</param>
         /// <returns></returns>
-        public X FindFirst(Expression<Func<X, bool>> useWhere = null)
+        public X FindFirst(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
         {
-            return FindFirstMethod(useWhere).Result;
+            return FindFirstMethod(useWhere, useInclude).Result;
         }
 
         /// <summary>
@@ -82,9 +94,9 @@ namespace AutoEFContextRepository
         /// </summary>
         /// <param name="useWhere">使用的过滤条件</param>
         /// <returns></returns>
-        public List<X> GetAll(Expression<Func<X, bool>> useWhere = null)
+        public List<X> GetAll(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
         {
-            return GetAllMethod(useWhere).Result;
+            return GetAllMethod(useWhere, useInclude).Result;
    
         }
 
@@ -95,7 +107,7 @@ namespace AutoEFContextRepository
         /// <param name="pageSize">页容量</param>
         /// <param name="useWhere">使用的过滤条件</param>
         /// <returns></returns>
-        public PagePacker<X> GetPage(int usePage, int pageSize, Expression<Func<X, bool>> useWhere = null)
+        public PagePacker<X> GetPage(int usePage, int pageSize, Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
         {
             //输入检查
             if (usePage <= 0 || pageSize <=0)
@@ -119,7 +131,7 @@ namespace AutoEFContextRepository
             }
 
             //获取数据
-            var tempValue = GetPageValueMethod((usePage - 1) * pageSize, pageSize, useWhere).Result;
+            var tempValue = GetPageValueMethod((usePage - 1) * pageSize, pageSize, useWhere,useInclude).Result;
 
             //数值回写
             returnValue.TotalCount = tempTotalCount;
@@ -141,7 +153,26 @@ namespace AutoEFContextRepository
             m_useDB.Update(input);
         }
 
-        #region 私有NIO方法
+        #region 私有方法
+
+        /// <summary>
+        /// 使用Include委托实现Include机制
+        /// </summary>
+        /// <param name="useInclude"></param>
+        /// <returns></returns>
+        private IQueryable<X> Include(IncludeDel<X> useInclude = null)
+        {
+            if (null == useInclude)
+            {
+                return m_useDB;
+            }
+            else
+            {
+                return useInclude(m_useDB);
+            }
+
+        }
+
         /// <summary>
         /// Add NIO
         /// </summary>
@@ -167,15 +198,15 @@ namespace AutoEFContextRepository
         /// </summary>
         /// <param name="useWhere"></param>
         /// <returns></returns>
-        private async Task<X> FindFirstMethod(Expression<Func<X, bool>> useWhere = null)
+        private async Task<X> FindFirstMethod(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
         {
             if (null == useWhere)
             {
-                return await m_useDB.FirstAsync();
+                return await Include(useInclude).FirstAsync();
             }
             else
             {
-                return await m_useDB.FirstAsync(useWhere);
+                return await Include(useInclude).FirstAsync(useWhere);
             }
         }
 
@@ -184,15 +215,15 @@ namespace AutoEFContextRepository
         /// </summary>
         /// <param name="useWhere"></param>
         /// <returns></returns>
-        private async Task<List<X>> GetAllMethod(Expression<Func<X, bool>> useWhere = null)
+        private async Task<List<X>> GetAllMethod(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
         {
             if (null == useWhere)
             {
-                return await m_useDB.ToListAsync();
+                return await Include(useInclude).ToListAsync();
             }
             else
             {
-                return await m_useDB.Where(useWhere).ToListAsync();
+                return await Include(useInclude).Where(useWhere).ToListAsync();
             }
         }
 
@@ -203,15 +234,15 @@ namespace AutoEFContextRepository
         /// <param name="takeValue"></param>
         /// <param name="useWhere"></param>
         /// <returns></returns>
-        private async Task<List<X>> GetPageValueMethod(int skipValue, int takeValue, Expression<Func<X, bool>> useWhere = null)
+        private async Task<List<X>> GetPageValueMethod(int skipValue, int takeValue, Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
         {
             if (null == useWhere)
             {
-                return await m_useDB.Skip(skipValue).Take(takeValue).ToListAsync();
+                return await Include(useInclude).Skip(skipValue).Take(takeValue).ToListAsync();
             }
             else
             {
-                return await m_useDB.Where(useWhere).Skip(skipValue).Take(takeValue).ToListAsync();
+                return await Include(useInclude).Where(useWhere).Skip(skipValue).Take(takeValue).ToListAsync();
             }
         }
 
