@@ -20,21 +20,24 @@ namespace AutofacEFImp
 
         private OnModelCreatingDel m_useOneModelCreatingDel = null;
 
+        private IKEYFilter m_useKeyFilter = null;
+
         /// <summary>
         /// 构造自动化上下文准备器 以T为注册源
         /// </summary>
         /// <param name="inputConfiguringDel">使用的定义委托</param>
         /// <param name="inputOneMdelCreatingDel">使用的模型创建委托</param>
-        public GenericAutoEFAutofacContainerPrepare(OnConfiguringDel inputConfiguringDel = null, OnModelCreatingDel inputOneMdelCreatingDel = null)
+        public GenericAutoEFAutofacContainerPrepare(OnConfiguringDel inputConfiguringDel = null, OnModelCreatingDel inputOneMdelCreatingDel = null, IKEYFilter inputKeyFilter = null)
         {
             m_useOnConfiguring = inputConfiguringDel;
             m_useOneModelCreatingDel = inputOneMdelCreatingDel;
+            m_useKeyFilter = inputKeyFilter;
         }
 
         public void Prepare(ContainerBuilder builder)
         {
             //制作临时上下文对象
-            var tempType = ContextTypeFactory.GetProxyType<T>(m_useOnConfiguring, m_useOneModelCreatingDel);
+            var tempType = ContextTypeFactory.GetProxyType<T>(m_useOnConfiguring, m_useOneModelCreatingDel, m_useKeyFilter);
 
             //初始化数据库结构
             using (var tempContext = Activator.CreateInstance(tempType) as AutoContext)
