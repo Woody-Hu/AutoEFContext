@@ -80,9 +80,10 @@ namespace AutoEFContextRepository
         }
 
         /// <summary>
-        /// 寻找符合条件的第一个
+        /// 获取第一个
         /// </summary>
         /// <param name="useWhere">使用的过滤条件</param>
+        /// <param name="useInclude">使用的Include委托</param>
         /// <returns></returns>
         public X FindFirst(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
         {
@@ -90,58 +91,70 @@ namespace AutoEFContextRepository
         }
 
         /// <summary>
-        /// 寻找所有
+        /// 获取全部
         /// </summary>
         /// <param name="useWhere">使用的过滤条件</param>
+        /// <param name="useInclude">使用的Include委托</param>
         /// <returns></returns>
         public List<X> GetAll(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
         {
             return GetAllMethod(useWhere, useInclude).Result;
-   
         }
 
         /// <summary>
         /// 分页查询
         /// </summary>
-        /// <param name="usePage">当前页</param>
-        /// <param name="pageSize">页容量</param>
+        /// <param name="usePage">查询的页数</param>
+        /// <param name="pageSize">每页的容量</param>
         /// <param name="useWhere">使用的过滤条件</param>
+        /// <param name="useInclude">使用的Include委托</param>
         /// <returns></returns>
         public PagePacker<X> GetPage(int usePage, int pageSize, Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
         {
-            //输入检查
-            if (usePage <= 0 || pageSize <=0)
-            {
-                return null;
-            }
+            return GetPage(m_useDB, usePage, pageSize, useWhere, useInclude);
 
-            PagePacker<X> returnValue = new PagePacker<X>();
+        }
 
-            //计算总数量
-            int tempTotalCount = GetCountMethod(useWhere).Result;
+        /// <summary>
+        /// 附带转换机制的获取全部
+        /// </summary>
+        /// <typeparam name="Y">转换后的类型</typeparam>
+        /// <param name="useTransformer">使用的转换机制（如group操作）</param>
+        /// <param name="useWhere">使用的过滤条件</param>
+        /// <param name="useInclude">使用的Include委托</param>
+        /// <returns></returns>
+        public List<Y> GetAll<Y>(Func<IQueryable<X>, IQueryable<Y>> useTransformer, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+            where Y : class
+        {
+            return GetAllMethodGeneric(useTransformer(m_useDB), useWhere, useInclude).Result;
+        }
 
-            //计算总页数
-            int tempTotalPage = 0 == tempTotalCount % pageSize ? tempTotalCount / pageSize :
-                tempTotalCount / pageSize + 1;
+        /// <summary>
+        /// 附带转换机制的获取第一个
+        /// </summary>
+        /// <typeparam name="Y">转换后的类型</typeparam>
+        /// <param name="useTransformer">使用的转换机制（如group操作）</param>
+        /// <param name="useWhere">使用的过滤条件</param>
+        /// <param name="useInclude">使用的Include委托</param>
+        /// <returns></returns>
+        public Y FindFirst<Y>(Func<IQueryable<X>, IQueryable<Y>> useTransformer, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+            where Y : class
+        {
+            return FindFirstMethodGeneric(useTransformer(m_useDB), useWhere, useInclude).Result;
+        }
 
-            //校验页索引
-            if (usePage > tempTotalPage)
-            {
-                usePage = tempTotalPage;
-            }
-
-            //获取数据
-            var tempValue = GetPageValueMethod((usePage - 1) * pageSize, pageSize, useWhere,useInclude).Result;
-
-            //数值回写
-            returnValue.TotalCount = tempTotalCount;
-            returnValue.TotalPage = tempTotalPage;
-            returnValue.Values = tempValue;
-            returnValue.CurrentPage = usePage;
-            returnValue.PageSize = pageSize;
-
-            return returnValue;
-
+        /// <summary>
+        /// 分页查询
+        /// </summary>
+        /// <param name="usePage">查询的页数</param>
+        /// <param name="pageSize">每页的容量</param>
+        /// <param name="useWhere">使用的过滤条件</param>
+        /// <param name="useInclude">使用的Include委托</param>
+        /// <returns></returns>
+        public PagePacker<Y> GetPage<Y>(Func<IQueryable<X>, IQueryable<Y>> useTransformer, int usePage, int pageSize, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+            where Y : class
+        {
+            return GetPage(useTransformer(m_useDB), usePage, pageSize, useWhere, useInclude);
         }
 
         /// <summary>
@@ -160,17 +173,18 @@ namespace AutoEFContextRepository
         /// </summary>
         /// <param name="useInclude"></param>
         /// <returns></returns>
-        private IQueryable<X> Include(IncludeDel<X> useInclude = null)
+        private IQueryable<Y> Include<Y>(IQueryable<Y> inputSource,IncludeDel<Y> useInclude = null)
+            where Y:class
         {
+
             if (null == useInclude)
             {
-                return m_useDB;
+                return inputSource;
             }
             else
             {
-                return useInclude(m_useDB);
+                return useInclude(inputSource);
             }
-
         }
 
         /// <summary>
@@ -200,14 +214,7 @@ namespace AutoEFContextRepository
         /// <returns></returns>
         private async Task<X> FindFirstMethod(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
         {
-            if (null == useWhere)
-            {
-                return await Include(useInclude).FirstAsync();
-            }
-            else
-            {
-                return await Include(useInclude).FirstAsync(useWhere);
-            }
+            return await FindFirstMethodGeneric(m_useDB, useWhere, useInclude);
         }
 
         /// <summary>
@@ -217,32 +224,43 @@ namespace AutoEFContextRepository
         /// <returns></returns>
         private async Task<List<X>> GetAllMethod(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
         {
+            return await GetAllMethodGeneric(m_useDB, useWhere, useInclude);
+        }
+
+        /// <summary>
+        /// FindFirstNio泛型方式
+        /// </summary>
+        /// <param name="useWhere"></param>
+        /// <returns></returns>
+        private async Task<Y> FindFirstMethodGeneric<Y>(IQueryable<Y> inputSource, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+            where Y : class
+        {
             if (null == useWhere)
             {
-                return await Include(useInclude).ToListAsync();
+                return await Include(inputSource, useInclude).FirstAsync();
             }
             else
             {
-                return await Include(useInclude).Where(useWhere).ToListAsync();
+                return await Include(inputSource, useInclude).FirstAsync(useWhere);
             }
         }
 
         /// <summary>
-        /// 获得分页数据NIO方法
+        /// GetAllNio
         /// </summary>
-        /// <param name="skipValue"></param>
-        /// <param name="takeValue"></param>
         /// <param name="useWhere"></param>
         /// <returns></returns>
-        private async Task<List<X>> GetPageValueMethod(int skipValue, int takeValue, Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
+        private async Task<List<Y>> GetAllMethodGeneric<Y>
+            (IQueryable<Y> inputSource, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+            where Y : class
         {
             if (null == useWhere)
             {
-                return await Include(useInclude).Skip(skipValue).Take(takeValue).ToListAsync();
+                return await Include(inputSource, useInclude).ToListAsync();
             }
             else
             {
-                return await Include(useInclude).Where(useWhere).Skip(skipValue).Take(takeValue).ToListAsync();
+                return await Include(inputSource, useInclude).Where(useWhere).ToListAsync();
             }
         }
 
@@ -251,17 +269,87 @@ namespace AutoEFContextRepository
         /// </summary>
         /// <param name="useWhere"></param>
         /// <returns></returns>
-        private async Task<int> GetCountMethod(Expression<Func<X, bool>> useWhere = null)
+        private async Task<int> GetCountMethodGeneric<Y>(IQueryable<Y> inputSource, Expression<Func<Y, bool>> useWhere = null)
+            where Y:class
         {
             if (null == useWhere)
             {
-                return await m_useDB.CountAsync();
+                return await inputSource.CountAsync();
             }
             else
             {
-                return await m_useDB.CountAsync(useWhere);
+                return await inputSource.CountAsync(useWhere);
             }
-        } 
+        }
+
+        /// <summary>
+        /// 获得分页数据NIO方法 泛型方式
+        /// </summary>
+        /// <param name="skipValue"></param>
+        /// <param name="takeValue"></param>
+        /// <param name="useWhere"></param>
+        /// <returns></returns>
+        private async Task<List<Y>> GetPageValueMethodGeneric<Y>
+            (IQueryable<Y> inputSource, int skipValue, int takeValue, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+            where Y : class
+        {
+            if (null == useWhere)
+            {
+                return await Include(inputSource, useInclude).Skip(skipValue).Take(takeValue).ToListAsync();
+            }
+            else
+            {
+                return await Include(inputSource, useInclude).Where(useWhere).Skip(skipValue).Take(takeValue).ToListAsync();
+            }
+        }
+
+        /// <summary>
+        /// 泛型分页查询
+        /// </summary>
+        /// <typeparam name="Y"></typeparam>
+        /// <param name="inputSource"></param>
+        /// <param name="usePage"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="useWhere"></param>
+        /// <param name="useInclude"></param>
+        /// <returns></returns>
+        private PagePacker<Y> GetPage<Y>
+            (IQueryable<Y> inputSource, int usePage, int pageSize, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+            where Y : class
+        {
+            //输入检查
+            if (usePage <= 0 || pageSize <= 0)
+            {
+                return null;
+            }
+
+            PagePacker<Y> returnValue = new PagePacker<Y>();
+
+            //计算总数量
+            int tempTotalCount = GetCountMethodGeneric(inputSource, useWhere).Result;
+
+            //计算总页数
+            int tempTotalPage = 0 == tempTotalCount % pageSize ? tempTotalCount / pageSize :
+                tempTotalCount / pageSize + 1;
+
+            //校验页索引
+            if (usePage > tempTotalPage)
+            {
+                usePage = tempTotalPage;
+            }
+
+            //获取数据
+            var tempValue = GetPageValueMethodGeneric(inputSource, (usePage - 1) * pageSize, pageSize, useWhere, useInclude).Result;
+
+            //数值回写
+            returnValue.TotalCount = tempTotalCount;
+            returnValue.TotalPage = tempTotalPage;
+            returnValue.Values = tempValue;
+            returnValue.CurrentPage = usePage;
+            returnValue.PageSize = pageSize;
+
+            return returnValue;
+        }
         #endregion
     }
 }
