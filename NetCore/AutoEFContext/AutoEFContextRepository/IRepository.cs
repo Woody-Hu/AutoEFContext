@@ -11,7 +11,7 @@ namespace AutoEFContextRepository
     /// 储存层接口
     /// </summary>
     /// <typeparam name="X"></typeparam>
-    public interface IRepository<T,X>
+    public interface IRespository<T,X>
         where X:class
         where T:AutoContext
     {
@@ -32,8 +32,12 @@ namespace AutoEFContextRepository
         /// </summary>
         /// <param name="useWhere">使用的过滤条件</param>
         /// <param name="useInclude">使用的Include委托</param>
+        /// <param name="inputPropertyName">排序用的属性名</param>
+        /// <param name="ifASC">是否升序</param>
         /// <returns></returns>
-        List<X> GetAll(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null);
+        List<X> GetAll(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null
+            , string inputPropertyName = null
+            , bool ifASC = true);
 
         /// <summary>
         /// 附带转换机制的获取全部
@@ -42,10 +46,14 @@ namespace AutoEFContextRepository
         /// <param name="useTransformer">使用的转换机制（如group操作）</param>
         /// <param name="useWhere">使用的过滤条件</param>
         /// <param name="useInclude">使用的Include委托</param>
+        /// <param name="inputPropertyName">排序用的属性名</param>
+        /// <param name="ifASC">是否升序</param>
         /// <returns></returns>
         List<Y> GetAll<Y>
             (Func<IQueryable<X>, IQueryable<Y>> useTransformer
-            , Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null) where Y : class;
+            , Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null
+            , string inputPropertyName = null
+            , bool ifASC = true) where Y : class;
 
         /// <summary>
         /// 获取第一个
@@ -75,8 +83,11 @@ namespace AutoEFContextRepository
         /// <param name="pageSize">每页的容量</param>
         /// <param name="useWhere">使用的过滤条件</param>
         /// <param name="useInclude">使用的Include委托</param>
+        /// <param name="inputPropertyName">排序用的属性名</param>
+        /// <param name="ifASC">是否升序</param>
         /// <returns></returns>
-        PagePacker<X> GetPage(int usePage, int pageSize, Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null);
+        PagePacker<X> GetPage(int usePage, int pageSize, Expression<Func<X, bool>> useWhere = null
+            , IncludeDel<X> useInclude = null, string inputPropertyName = null, bool ifASC = true);
 
         /// <summary>
         /// 附带转换机制的分页查询
@@ -87,11 +98,44 @@ namespace AutoEFContextRepository
         /// <param name="pageSize">每页的容量</param>
         /// <param name="useWhere">使用的过滤条件</param>
         /// <param name="useInclude">使用的Include委托</param>
+        /// <param name="inputPropertyName">排序用的属性名</param>
+        /// <param name="ifASC">是否升序</param>
         /// <returns></returns>
         PagePacker<Y> GetPage<Y>(Func<IQueryable<X>, IQueryable<Y>> useTransformer,
-            int usePage, int pageSize, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null) where Y : class;
-        #endregion
+            int usePage, int pageSize, Expression<Func<Y, bool>> useWhere = null
+            , IncludeDel<Y> useInclude = null, string inputPropertyName = null
+            , bool ifASC = true) where Y : class;
 
+        /// <summary>
+        /// 分页查询
+        /// </summary>
+        /// <param name="usePage">查询的页数</param>
+        /// <param name="pageSize">每页的容量</param>
+        /// <param name="useWhere">使用的过滤条件</param>
+        /// <param name="useInclude">使用的Include委托</param>
+        /// <param name="inputPropertyName">排序用的属性名</param>
+        /// <param name="ifASC">是否升序</param>
+        /// <returns></returns>
+        PagePackerBoostrap<X> GetPageBootstrap(int usePage, int pageSize, Expression<Func<X, bool>> useWhere = null,
+            IncludeDel<X> useInclude = null, string inputPropertyName = null, bool ifASC = true);
+
+        /// <summary>
+        /// 附带转换机制的分页查询
+        /// </summary>
+        /// <typeparam name="Y">转换后的类型</typeparam>
+        /// <param name="useTransformer">使用的转换机制（如group操作）</param>
+        /// <param name="usePage">查询的页数</param>
+        /// <param name="pageSize">每页的容量</param>
+        /// <param name="useWhere">使用的过滤条件</param>
+        /// <param name="useInclude">使用的Include委托</param>
+        /// <param name="inputPropertyName">排序用的属性名</param>
+        /// <param name="ifASC">是否升序</param>
+        /// <returns></returns>
+        PagePackerBoostrap<Y> GetPageBootstrap<Y>(Func<IQueryable<X>, IQueryable<Y>> useTransformer,
+            int usePage, int pageSize, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null
+            , string inputPropertyName = null, bool ifASC = true) where Y : class;
+        #endregion
+       
 
         /// <summary>
         /// 添加一个
@@ -116,5 +160,24 @@ namespace AutoEFContextRepository
         /// </summary>
         /// <param name="input"></param>
         void Delete(X input);
+
+        /// <summary>
+        /// 显示加载
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="input"></param>
+        /// <param name="useProperty"></param>
+        void Load<Y>(X input, Expression<Func<X, IEnumerable<Y>>> propertyExpression)
+            where Y:class;
+
+        /// <summary>
+        /// 显示加载
+        /// </summary>
+        /// <typeparam name="Y"></typeparam>
+        /// <param name="input"></param>
+        /// <param name="propertyExpression"></param>
+        void Load<Y>(X input, Expression<Func<X, Y>> propertyExpression)
+             where Y : class;
+
     }
 }

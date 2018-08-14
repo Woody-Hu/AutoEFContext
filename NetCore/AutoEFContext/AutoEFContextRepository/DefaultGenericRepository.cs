@@ -16,7 +16,7 @@ namespace AutoEFContextRepository
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="X"></typeparam>
-    public class DefaultGenericRepository<T, X> : IRepository<T,X>
+    public class DefaultGenericRepository<T, X> : IRespository<T,X>
         where T:AutoContext
         where X:class
     {
@@ -30,6 +30,11 @@ namespace AutoEFContextRepository
         /// 使用的对应DbSet对象
         /// </summary>
         private DbSet<X> m_useDB;
+
+        /// <summary>
+        /// 使用的迭代类型
+        /// </summary>
+        private static readonly Type m_useIEnumableType = typeof(IEnumerable<>);
         #endregion
 
         /// <summary>
@@ -96,9 +101,10 @@ namespace AutoEFContextRepository
         /// <param name="useWhere">使用的过滤条件</param>
         /// <param name="useInclude">使用的Include委托</param>
         /// <returns></returns>
-        public List<X> GetAll(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
+        public List<X> GetAll(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null, string inputPropertyName = null
+            , bool ifASC = true)
         {
-            return GetAllMethod(useWhere, useInclude).Result;
+            return GetAllMethod(useWhere, useInclude,inputPropertyName,ifASC).Result;
         }
 
         /// <summary>
@@ -109,9 +115,10 @@ namespace AutoEFContextRepository
         /// <param name="useWhere">使用的过滤条件</param>
         /// <param name="useInclude">使用的Include委托</param>
         /// <returns></returns>
-        public PagePacker<X> GetPage(int usePage, int pageSize, Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
+        public PagePacker<X> GetPage(int usePage, int pageSize, Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null, string inputPropertyName = null
+            , bool ifASC = true)
         {
-            return GetPage(m_useDB, usePage, pageSize, useWhere, useInclude);
+            return GetPage(m_useDB, usePage, pageSize, useWhere, useInclude,inputPropertyName,ifASC);
 
         }
 
@@ -123,10 +130,11 @@ namespace AutoEFContextRepository
         /// <param name="useWhere">使用的过滤条件</param>
         /// <param name="useInclude">使用的Include委托</param>
         /// <returns></returns>
-        public List<Y> GetAll<Y>(Func<IQueryable<X>, IQueryable<Y>> useTransformer, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+        public List<Y> GetAll<Y>(Func<IQueryable<X>, IQueryable<Y>> useTransformer, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null, string inputPropertyName = null
+            , bool ifASC = true)
             where Y : class
         {
-            return GetAllMethodGeneric(useTransformer(m_useDB), useWhere, useInclude).Result;
+            return GetAllMethodGeneric(useTransformer(m_useDB), useWhere, useInclude,inputPropertyName,ifASC).Result;
         }
 
         /// <summary>
@@ -151,10 +159,43 @@ namespace AutoEFContextRepository
         /// <param name="useWhere">使用的过滤条件</param>
         /// <param name="useInclude">使用的Include委托</param>
         /// <returns></returns>
-        public PagePacker<Y> GetPage<Y>(Func<IQueryable<X>, IQueryable<Y>> useTransformer, int usePage, int pageSize, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+        public PagePacker<Y> GetPage<Y>(Func<IQueryable<X>, IQueryable<Y>> useTransformer, int usePage, int pageSize, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null, string inputPropertyName = null
+            , bool ifASC = true)
             where Y : class
         {
-            return GetPage(useTransformer(m_useDB), usePage, pageSize, useWhere, useInclude);
+            return GetPage(useTransformer(m_useDB), usePage, pageSize, useWhere, useInclude, inputPropertyName, ifASC);
+        }
+
+        /// <summary>
+        /// 分页查询 用于boostrap
+        /// </summary>
+        /// <param name="usePage">查询的页数</param>
+        /// <param name="pageSize">每页的容量</param>
+        /// <param name="useWhere">使用的过滤条件</param>
+        /// <param name="useInclude">使用的Include委托</param>
+        public PagePackerBoostrap<X> GetPageBootstrap(int usePage, int pageSize, Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null, string inputPropertyName = null
+            , bool ifASC = true)
+        {
+            var tempPage = GetPage(m_useDB, usePage, pageSize, useWhere, useInclude, inputPropertyName, ifASC);
+
+            return new PagePackerBoostrap<X>() { Total = tempPage.TotalCount, Rows = tempPage.Values };
+        }
+
+        /// <summary>
+        /// 附带转换机制的分页查询 用于boostrap
+        /// </summary>
+        /// <typeparam name="Y">转换后的类型</typeparam>
+        /// <param name="useTransformer">使用的转换机制（如group操作）</param>
+        /// <param name="usePage">查询的页数</param>
+        /// <param name="pageSize">每页的容量</param>
+        /// <param name="useWhere">使用的过滤条件</param>
+        /// <param name="useInclude">使用的Include委托</param>
+        public PagePackerBoostrap<Y> GetPageBootstrap<Y>(Func<IQueryable<X>, IQueryable<Y>> useTransformer, int usePage, int pageSize, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null, string inputPropertyName = null
+            , bool ifASC = true) where Y : class
+        {
+            var tempPage = GetPage(useTransformer(m_useDB), usePage, pageSize, useWhere, useInclude, inputPropertyName, ifASC);
+
+            return new PagePackerBoostrap<Y>() { Total = tempPage.TotalCount, Rows = tempPage.Values };
         }
 
         /// <summary>
@@ -166,7 +207,47 @@ namespace AutoEFContextRepository
             m_useDB.Update(input);
         }
 
+        public void Load<Y>(X input, Expression<Func<X, IEnumerable<Y>>> propertyExpression)
+             where Y : class
+        {
+
+            LoadMethod(input, propertyExpression).Wait();
+        }
+
+        public void Load<Y>(X input, Expression<Func<X, Y>> propertyExpression)
+              where Y : class
+        {
+
+            LoadMethod(input, propertyExpression).Wait();
+        }
+
         #region 私有方法
+
+        /// <summary>
+        /// 加载方法NIO
+        /// </summary>
+        /// <typeparam name="Y"></typeparam>
+        /// <param name="input"></param>
+        /// <param name="propertyExpression"></param>
+        /// <returns></returns>
+        private async Task LoadMethod<Y>(X input, Expression<Func<X, IEnumerable<Y>>> propertyExpression)
+              where Y : class
+        {
+            await UseContext.Entry(input).Collection(propertyExpression).LoadAsync();
+        }
+
+        /// <summary>
+        /// 加载方法NIO
+        /// </summary>
+        /// <typeparam name="Y"></typeparam>
+        /// <param name="input"></param>
+        /// <param name="propertyExpression"></param>
+        /// <returns></returns>
+        private async Task LoadMethod<Y>(X input, Expression<Func<X, Y>> propertyExpression)
+           where Y : class
+        {
+            await UseContext.Entry(input).Reference(propertyExpression).LoadAsync();
+        }
 
         /// <summary>
         /// 使用Include委托实现Include机制
@@ -222,9 +303,9 @@ namespace AutoEFContextRepository
         /// </summary>
         /// <param name="useWhere"></param>
         /// <returns></returns>
-        private async Task<List<X>> GetAllMethod(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null)
+        private async Task<List<X>> GetAllMethod(Expression<Func<X, bool>> useWhere = null, IncludeDel<X> useInclude = null, string inputPropertyName = null, bool ifASC = true)
         {
-            return await GetAllMethodGeneric(m_useDB, useWhere, useInclude);
+            return await GetAllMethodGeneric(m_useDB, useWhere, useInclude,inputPropertyName,ifASC);
         }
 
         /// <summary>
@@ -237,11 +318,11 @@ namespace AutoEFContextRepository
         {
             if (null == useWhere)
             {
-                return await Include(inputSource, useInclude).FirstAsync();
+                return await Include(inputSource, useInclude).FirstOrDefaultAsync();
             }
             else
             {
-                return await Include(inputSource, useInclude).FirstAsync(useWhere);
+                return await Include(inputSource, useInclude).FirstOrDefaultAsync(useWhere);
             }
         }
 
@@ -251,17 +332,26 @@ namespace AutoEFContextRepository
         /// <param name="useWhere"></param>
         /// <returns></returns>
         private async Task<List<Y>> GetAllMethodGeneric<Y>
-            (IQueryable<Y> inputSource, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+            (IQueryable<Y> inputSource, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null
+            , string inputPropertyName = null, bool ifASC = true)
             where Y : class
         {
-            if (null == useWhere)
+            var useValue = Include(inputSource, useInclude);
+
+            if (null != useWhere)
             {
-                return await Include(inputSource, useInclude).ToListAsync();
+                useValue = useValue.Where(useWhere);
             }
-            else
+
+            //获取排序
+            var tempOrderFunc = ExpressionUtility.GetOrderByFunc<Y>(inputPropertyName, ifASC);
+
+            if (null != tempOrderFunc)
             {
-                return await Include(inputSource, useInclude).Where(useWhere).ToListAsync();
+                useValue = tempOrderFunc(useValue);
             }
+
+            return await useValue.ToListAsync();
         }
 
         /// <summary>
@@ -290,17 +380,27 @@ namespace AutoEFContextRepository
         /// <param name="useWhere"></param>
         /// <returns></returns>
         private async Task<List<Y>> GetPageValueMethodGeneric<Y>
-            (IQueryable<Y> inputSource, int skipValue, int takeValue, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+            (IQueryable<Y> inputSource, int skipValue, int takeValue, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null
+            ,string inputPropertyName = null,bool ifASC = true)
             where Y : class
         {
-            if (null == useWhere)
+            var useValue = Include(inputSource, useInclude);
+
+            if (null != useWhere)
             {
-                return await Include(inputSource, useInclude).Skip(skipValue).Take(takeValue).ToListAsync();
+                useValue = useValue.Where(useWhere);
             }
-            else
+
+            //获取排序
+            var tempOrderFunc = ExpressionUtility.GetOrderByFunc<Y>(inputPropertyName, ifASC);
+
+            if (null != tempOrderFunc)
             {
-                return await Include(inputSource, useInclude).Where(useWhere).Skip(skipValue).Take(takeValue).ToListAsync();
+                useValue = tempOrderFunc(useValue);
             }
+
+            //Nio
+            return await useValue.Skip(skipValue).Take(takeValue).ToListAsync();
         }
 
         /// <summary>
@@ -314,7 +414,9 @@ namespace AutoEFContextRepository
         /// <param name="useInclude"></param>
         /// <returns></returns>
         private PagePacker<Y> GetPage<Y>
-            (IQueryable<Y> inputSource, int usePage, int pageSize, Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null)
+            (IQueryable<Y> inputSource, int usePage, int pageSize,
+            Expression<Func<Y, bool>> useWhere = null, IncludeDel<Y> useInclude = null
+            , string inputPropertyName = null, bool ifASC = true)
             where Y : class
         {
             //输入检查
@@ -339,7 +441,8 @@ namespace AutoEFContextRepository
             }
 
             //获取数据
-            var tempValue = GetPageValueMethodGeneric(inputSource, (usePage - 1) * pageSize, pageSize, useWhere, useInclude).Result;
+            var tempValue = GetPageValueMethodGeneric
+                (inputSource, (usePage - 1) * pageSize, pageSize, useWhere, useInclude, inputPropertyName,ifASC).Result;
 
             //数值回写
             returnValue.TotalCount = tempTotalCount;
