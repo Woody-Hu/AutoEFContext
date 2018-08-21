@@ -440,6 +440,17 @@ namespace AutoEFContextRepository
                 usePage = tempTotalPage;
             }
 
+
+            //若没有数据
+            if (usePage == 0)
+            {
+                returnValue.TotalCount = 0;
+                returnValue.TotalPage = 0;
+                returnValue.Values = new List<Y>();
+                returnValue.CurrentPage = 0;
+                returnValue.PageSize = 0;
+            }
+
             //获取数据
             var tempValue = GetPageValueMethodGeneric
                 (inputSource, (usePage - 1) * pageSize, pageSize, useWhere, useInclude, inputPropertyName,ifASC).Result;
