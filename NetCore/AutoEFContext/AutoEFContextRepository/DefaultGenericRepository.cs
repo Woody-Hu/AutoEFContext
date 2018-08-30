@@ -449,6 +449,7 @@ namespace AutoEFContextRepository
                 returnValue.Values = new List<Y>();
                 returnValue.CurrentPage = 0;
                 returnValue.PageSize = 0;
+                return returnValue;
             }
 
             //获取数据
